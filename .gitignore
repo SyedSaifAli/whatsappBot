@@ -1,0 +1,6 @@
+.DS_Store
+.idea/
+/debug.log
+node_modules
+tokens
+package-lock.json
