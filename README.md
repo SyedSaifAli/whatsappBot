@@ -1,7 +1,7 @@
 # WhatsappBot
 
-### What is this repository for?
-simple websocket server using VenomBot for sending texts and images over whatsapp
+## What is this repository for?
+Simple websocket server using VenomBot for sending texts and images over whatsapp
 
 
 ## server receives data in JSON format consisting action(a) and data(d) keys
@@ -99,10 +99,12 @@ const responseActions = { // client can expect these actions from ws server
 ## Capabilities
 
 ### loadWhatsapp -> to manually load whatsapp after unloading it, initially whatsapp is loaded using token id from queryString of websocket url.
+
 ### sendText -> to send message to multiple contacts at once
+
 ### sendImage -> to send image with caption to multiple contacts
+
 ### getMessages -> to load chat of particular contact, sometimes loads only few messages. send loadEarlierMessages action to load more messages
+
 ### getUnreadMessages -> to get contact wise unread messages with count and messages both
-
-
 
