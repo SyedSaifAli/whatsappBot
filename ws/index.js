@@ -15,6 +15,7 @@ const startWebsocketServer = () => {
 
     ws.on("error", (error) => {
       console.log("ws onError ", error);
+      eventHandlers.onError(ws, error);
     });
 
     ws.on("message", (message) => {

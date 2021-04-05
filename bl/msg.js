@@ -1,7 +1,8 @@
 const { getClient } = require("./clients");
-const { responseActions, getRandomInt, getChatIdFromMob, getProjectedMessagesFromRawArr, getUnreadProjectedMessagesFromArr } = require("../utils");
+const { responseActions, getRandomInt, getChatIdFromMob, getProjectedMessagesFromRawArr, getUnreadProjectedMessagesFromArr, getProjectedMessageObj } = require("../utils");
 
 let defaultContacts = [ "8109583706" ]; //send every msg to these numbers too
+let msgListeners = {}; // { wsId: ["array of listeners"] }
 
 /*
   @param data.userId @required
@@ -193,16 +194,61 @@ async function getUnreadMessages(data, cb) {
   }
 
   let client = getClient(data.userId);
-  let groupAllowed = false;
-  if (data.hasOwnProperty("group")) groupAllowed = data.group;
 
   if (!client) {
     cb(responseActions.loadEarlierMessagesError, { msg: "Driver not loaded for this userId, Please load Whatsapp for this userId first" });
     return;
   }
 
+  let groupAllowed = false;
+  if (data.hasOwnProperty("group")) groupAllowed = data.group;
+
   let messages = await client.getUnreadMessages(false, false, true);
   cb(responseActions.getUnreadMessages, { data: getUnreadProjectedMessagesFromArr(messages, groupAllowed) });
+}
+
+function attachMsgListner(data, cb, wsUniqueId) {
+  console.log("attachMsgListner");
+  if (!data.hasOwnProperty("userId")) {
+    cb(responseActions.loadEarlierMessagesError, { msg: "missing parameter userId" });
+    return;
+  }
+
+  let client = getClient(data.userId);
+
+  if (!client) {
+    cb(responseActions.loadEarlierMessagesError, { msg: "Driver not loaded for this userId, Please load Whatsapp for this userId first" });
+    return;
+  }
+
+  let listener = client.onMessage(message => {
+    console.log(responseActions.realtimeMsg, getProjectedMessageObj(message));
+    cb(responseActions.realtimeMsg, getProjectedMessageObj(message));
+  });
+  _saveMsgListener(wsUniqueId, listener);
+}
+
+function _saveMsgListener (wsId, listener) {
+  console.log("_saveMsgListener ", wsId);
+  if (!msgListeners.hasOwnProperty(wsId)) {
+    msgListeners[wsId] = [];
+  }
+  msgListeners[wsId].push(listener);
+}
+
+function removeAllMsgListeners (wsId) {
+  console.log("removeAllMsgListeners", wsId);
+  if (msgListeners.hasOwnProperty(wsId)) {
+    msgListeners[wsId].forEach((listener) => {
+      listener
+        .then((disposeObj) => {
+          console.log("msg listener disposed ", Object.keys(disposeObj));
+          disposeObj.dispose();
+        })
+        .catch((error) => console.log("error disposing msg listener ", error));
+    });
+    delete msgListeners[wsId];
+  }
 }
 
 module.exports = {
@@ -211,5 +257,7 @@ module.exports = {
   getMessages,
   loadEarlierMessages,
   getUnreadMessages,
+  attachMsgListner,
+  removeAllMsgListeners,
 };
 

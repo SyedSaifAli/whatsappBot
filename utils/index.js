@@ -32,6 +32,7 @@ const responseActions = { // client can expect these actions from ws server
   jobComplete: "jobComplete",  // generic action for any job completion status
   getMessages: "getMessages",
   getUnreadMessages: "getUnreadMessages",
+  realtimeMsg: "realtimeMsg",
 };
 
 const requestActions = { // ws client should send these actions only
@@ -42,13 +43,14 @@ const requestActions = { // ws client should send these actions only
   getUnreadMessages: "getUnreadMessages",
   unloadWhatsapp: "unloadWhatsapp",
   loadEarlierMessages: "loadEarlierMessages",
+  getRealtimeMsgs: "getRealtimeMsgs",
 };
 
 function sendJSON(ws, action, json) {
   try {
 
     let obj = { a: action, d: json };
-    console.log("sendJSON ", ws.readyState, obj);
+    console.log("sendJSON ", obj, "ws.readyState ", ws.readyState);
     ws.send(JSON.stringify(obj));
 
   } catch (e) {
@@ -68,13 +70,7 @@ function getChatIdFromMob(mob) {
 
 function getProjectedMessagesFromRawArr (msgArr) {
   return msgArr.reduce((accumulator, currVal) => {
-    accumulator.push({
-      id: currVal.id,
-      content: currVal.content,
-      type: currVal.type,
-      ts: currVal.timestamp,
-      senderName: currVal.sender.formattedName
-    });
+    accumulator.push(getProjectedMessageObj(currVal));
     return accumulator;
   }, []);
 }
@@ -100,6 +96,17 @@ function getUnreadProjectedMessagesFromArr (msgArr, groupAllowed) {
   }, []);
 }
 
+function getProjectedMessageObj(msg) {
+  return {
+    id: msg.id,
+    content: msg.content,
+    type: msg.type,
+    ts: msg.timestamp,
+    senderName: msg.sender.formattedName,
+    isGroupMsg: msg.isGroupMsg,
+  };
+}
+
 module.exports = {
   clientOptions,
   sendJSON,
@@ -109,4 +116,5 @@ module.exports = {
   getChatIdFromMob,
   getProjectedMessagesFromRawArr,
   getUnreadProjectedMessagesFromArr,
+  getProjectedMessageObj,
 };
