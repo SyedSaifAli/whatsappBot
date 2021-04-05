@@ -59,6 +59,7 @@ function onOpen(ws, req) {
     sendJSON(ws, responseActions.warning, { msg: "no userId found in query parameteres, manually send loadWhatsapp action to load driver" });
     return;
   }
+  sendJSON(ws, 'ready');
   _attachHandler(ws, requestActions.loadWhatsapp, { userId: userId });
 }
 

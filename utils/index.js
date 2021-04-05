@@ -12,7 +12,7 @@ const clientOptions = {
   disableSpins: true, // Will disable Spinnies animation, useful for containers (docker) for a better log
   disableWelcome: true, // Will disable the welcoming message which appears in the beginning
   updatesLog: true, // Logs info updates automatically in terminal
-  autoClose: 3600, // Automatically closes the venom-bot only when scanning the QR code (default 60 seconds, if you want to turn it off, assign 0 or false)
+  // autoClose: 3600, // Automatically closes the venom-bot only when scanning the QR code (default 60 seconds, if you want to turn it off, assign 0 or false)
   createPathFileToken: true, //creates a folder when inserting an object in the client's browser, to work it is necessary to pass the parameters in the function create browserSessionToken
 };
 
@@ -32,6 +32,7 @@ const responseActions = { // client can expect these actions from ws server
   jobComplete: "jobComplete",  // generic action for any job completion status
   getMessages: "getMessages",
   getUnreadMessages: "getUnreadMessages",
+  loadEarlierMessages: "loadEarlierMessages",
 };
 
 const requestActions = { // ws client should send these actions only
@@ -67,6 +68,7 @@ function getChatIdFromMob(mob) {
 }
 
 function getProjectedMessagesFromRawArr (msgArr) {
+  if(!msgArr) return [];
   return msgArr.reduce((accumulator, currVal) => {
     accumulator.push({
       id: currVal.id,
