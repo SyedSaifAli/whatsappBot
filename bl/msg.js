@@ -78,13 +78,6 @@ function sendImage(data, cb) {
     return;
   }
 
-  var imageName =  data.userId + "_" + data.imageName;
-
-  var filePath = imageDir + "/" + imageName;
-
-  fs.writeFile(filePath, base64Data, 'base64', function(err) {
-    console.log(err);
-  });
   if (!data.hasOwnProperty("userId")) {
     cb(responseActions.sendImageError, { msg: "missing parameter userId" });
     return;
@@ -95,12 +88,20 @@ function sendImage(data, cb) {
     return;
   }
 
-  let client = getClient(data.userId);
-
   if (!client) {
     cb(responseActions.sendImageError, { msg: "driver not loaded for this userId, Please load Whatsapp for this userId first" });
     return;
   }
+
+  var imageName =  data.userId + "_" + data.imageName;
+
+  var filePath = imageDir + "/" + imageName;
+
+  fs.writeFile(filePath, base64Data, 'base64', function(err) {
+    console.log(err);
+  });
+
+  let client = getClient(data.userId);
 
   let mobileNumbersArr = data.mob.toString().replace(/\s+/g, "").split(",");
   if (!mobileNumbersArr || !mobileNumbersArr.length) {
