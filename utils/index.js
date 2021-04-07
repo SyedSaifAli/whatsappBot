@@ -12,7 +12,7 @@ const clientOptions = {
   disableSpins: true, // Will disable Spinnies animation, useful for containers (docker) for a better log
   disableWelcome: true, // Will disable the welcoming message which appears in the beginning
   updatesLog: true, // Logs info updates automatically in terminal
-  autoClose: 3600, // Automatically closes the venom-bot only when scanning the QR code (default 60 seconds, if you want to turn it off, assign 0 or false)
+  // autoClose: 3600, // Automatically closes the venom-bot only when scanning the QR code (default 60 seconds, if you want to turn it off, assign 0 or false)
   createPathFileToken: true, //creates a folder when inserting an object in the client's browser, to work it is necessary to pass the parameters in the function create browserSessionToken
 };
 
@@ -68,6 +68,13 @@ function getChatIdFromMob(mob) {
   return "91" + mob + "@c.us";
 }
 
+function getMobFromChatId(chatId) {
+  if(chatId && chatId.startsWith('91') && chatId.endsWith('@c.us')){
+    return +chatId.substring(2,chatId.length - 5);
+  }
+  else return chatId;
+}
+
 function getProjectedMessagesFromRawArr (msgArr) {
   return msgArr.reduce((accumulator, currVal) => {
     accumulator.push(getProjectedMessageObj(currVal));
@@ -104,6 +111,7 @@ function getProjectedMessageObj(msg) {
     ts: msg.timestamp,
     senderName: msg.sender.formattedName,
     isGroupMsg: msg.isGroupMsg,
+    mob: getMobFromChatId(msg.from)
   };
 }
 
