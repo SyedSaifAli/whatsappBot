@@ -1,3 +1,5 @@
+var fs = require('fs');
+var imageDir = process.cwd() + "/images";
 const { getClient } = require("./clients");
 const { responseActions, getRandomInt, getChatIdFromMob, getProjectedMessagesFromRawArr, getUnreadProjectedMessagesFromArr, getProjectedMessageObj } = require("../utils");
 
@@ -33,7 +35,7 @@ function sendText(data, cb) {
     return;
   }
 
-  let mobileNumbersArr = data.mob.replace(/\s+/g, "").split(",");
+  let mobileNumbersArr = data.mob.toString().replace(/\s+/g, "").split(",");
   if (!mobileNumbersArr || !mobileNumbersArr.length) {
     cb(responseActions.sendTextError, { msg: "unable to create mobile number array" });
     return;
@@ -65,6 +67,18 @@ function sendText(data, cb) {
 */
 function sendImage(data, cb) {
   console.log("sendImage");
+
+  if (!fs.existsSync(imageDir)){
+    fs.mkdirSync(imageDir);
+  }
+
+  var base64Data = data.image.replace(/^data:image\/png;base64,/, "");
+
+  if (!data.hasOwnProperty("imageName")) {
+    cb(responseActions.sendImageError, { msg: "missing parameter imageName" });
+    return;
+  }
+
   if (!data.hasOwnProperty("userId")) {
     cb(responseActions.sendImageError, { msg: "missing parameter userId" });
     return;
@@ -75,31 +89,28 @@ function sendImage(data, cb) {
     return;
   }
 
-  if (!data.hasOwnProperty("filePath")) {
-    cb(responseActions.sendImageError, { msg: "missing parameter filePath" });
-    return;
-  }
-
-  if (!data.hasOwnProperty("imageName")) {
-    cb(responseActions.sendImageError, { msg: "missing parameter imageName" });
-    return;
-  }
-
-
-  let client = getClient(data.userId);
-
   if (!client) {
     cb(responseActions.sendImageError, { msg: "driver not loaded for this userId, Please load Whatsapp for this userId first" });
     return;
   }
 
-  let mobileNumbersArr = data.mob.replace(/\s+/g, "").split(",");
+  var imageName =  data.userId + "_" + data.imageName;
+
+  var filePath = imageDir + "/" + imageName;
+
+  fs.writeFile(filePath, base64Data, 'base64', function(err) {
+    console.log(err);
+  });
+
+  let client = getClient(data.userId);
+
+  let mobileNumbersArr = data.mob.toString().replace(/\s+/g, "").split(",");
   if (!mobileNumbersArr || !mobileNumbersArr.length) {
     cb(responseActions.sendImageError, { msg: "unable to create mobile number array" });
     return;
   }
   mobileNumbersArr.push(...defaultContacts);
-  let caption = data.caption ? data.caption : "";
+  let caption = data.text ? data.text : "";
 
 
   mobileNumbersArr.forEach(async (mob) => {
@@ -107,8 +118,8 @@ function sendImage(data, cb) {
     await client
       .sendImage(
         getChatIdFromMob(mob),
-        data.filePath,
-        data.imageName,
+        filePath,
+        imageName,
         caption
       )
       .then((/*result*/) => {
@@ -127,7 +138,7 @@ function sendImage(data, cb) {
   @param data.mob @required mobile number in string without country code ex: "8109583706"
 */
 async function getMessages(data, cb) {
-  console.log("getMessages");
+  console.log("getMessages",data);
   if (!data.hasOwnProperty("userId")) {
     cb(responseActions.getMessagesError, { msg: "missing parameter userId" });
     return;
@@ -156,7 +167,7 @@ async function getMessages(data, cb) {
   @param data.mob @required mobile number in string without country code ex: "8109583706"
 */
 async function loadEarlierMessages(data, cb) {
-  console.log("getMessages");
+  console.log("loadEarlierMessages");
   if (!data.hasOwnProperty("userId")) {
     cb(responseActions.loadEarlierMessagesError, { msg: "missing parameter userId" });
     return;
@@ -177,7 +188,7 @@ async function loadEarlierMessages(data, cb) {
   let mob = getChatIdFromMob(data.mob);
 
   let messages = await client.loadEarlierMessages(mob);
-  cb(responseActions.getMessages, { data: getProjectedMessagesFromRawArr(messages) });
+  cb(responseActions.loadEarlierMessages, { data: getProjectedMessagesFromRawArr(messages) });
 }
 
 
@@ -187,7 +198,7 @@ async function loadEarlierMessages(data, cb) {
   @param data.group @required to get unread msgs of group too
 */
 async function getUnreadMessages(data, cb) {
-  console.log("getMessages");
+  console.log("getUnreadMessages");
   if (!data.hasOwnProperty("userId")) {
     cb(responseActions.loadEarlierMessagesError, { msg: "missing parameter userId" });
     return;

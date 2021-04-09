@@ -33,6 +33,7 @@ const responseActions = { // client can expect these actions from ws server
   getMessages: "getMessages",
   getUnreadMessages: "getUnreadMessages",
   realtimeMsg: "realtimeMsg",
+  loadEarlierMessages: "loadEarlierMessages",
 };
 
 const requestActions = { // ws client should send these actions only
@@ -76,6 +77,7 @@ function getMobFromChatId(chatId) {
 }
 
 function getProjectedMessagesFromRawArr (msgArr) {
+  if(!msgArr) return [];
   return msgArr.reduce((accumulator, currVal) => {
     accumulator.push(getProjectedMessageObj(currVal));
     return accumulator;
