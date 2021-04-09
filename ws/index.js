@@ -4,6 +4,7 @@ const process = require("process");
 const PORT = 9099;
 
 const startWebsocketServer = () => {
+  console.log('starting ws server on port', PORT);
   const wss = new WebSocket.Server({
     port: PORT,
     path: "/whatsapp"
