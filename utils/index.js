@@ -3,7 +3,7 @@ const clientOptions = {
   mkdirFolderToken: "", //folder directory tokens, just inside the venom folder, example:  { mkdirFolderToken: '/node_modules', } //will save the tokens folder in the node_modules directory
   headless: true, // Headless chrome
   devtools: false, // Open devtools by default
-  useChrome: true, // If false will use Chromium instance
+  useChrome: false, // If false will use Chromium instance
   debug: false, // Opens a debug session
   logQR: false, // Logs QR automatically in terminal
   browserWS: "", // If u want to use browserWSEndpoint
@@ -32,6 +32,7 @@ const responseActions = { // client can expect these actions from ws server
   jobComplete: "jobComplete",  // generic action for any job completion status
   getMessages: "getMessages",
   getUnreadMessages: "getUnreadMessages",
+  realtimeMsg: "realtimeMsg",
   loadEarlierMessages: "loadEarlierMessages",
 };
 
@@ -43,13 +44,14 @@ const requestActions = { // ws client should send these actions only
   getUnreadMessages: "getUnreadMessages",
   unloadWhatsapp: "unloadWhatsapp",
   loadEarlierMessages: "loadEarlierMessages",
+  getRealtimeMsgs: "getRealtimeMsgs",
 };
 
 function sendJSON(ws, action, json) {
   try {
 
     let obj = { a: action, d: json };
-    console.log("sendJSON ", ws.readyState, obj);
+    console.log("sendJSON ", obj, "ws.readyState ", ws.readyState);
     ws.send(JSON.stringify(obj));
 
   } catch (e) {
@@ -67,16 +69,17 @@ function getChatIdFromMob(mob) {
   return "91" + mob + "@c.us";
 }
 
+function getMobFromChatId(chatId) {
+  if(chatId && chatId.startsWith('91') && chatId.endsWith('@c.us')){
+    return +chatId.substring(2,chatId.length - 5);
+  }
+  else return chatId;
+}
+
 function getProjectedMessagesFromRawArr (msgArr) {
   if(!msgArr) return [];
   return msgArr.reduce((accumulator, currVal) => {
-    accumulator.push({
-      id: currVal.id,
-      content: currVal.content,
-      type: currVal.type,
-      ts: currVal.timestamp,
-      senderName: currVal.sender.formattedName
-    });
+    accumulator.push(getProjectedMessageObj(currVal));
     return accumulator;
   }, []);
 }
@@ -102,6 +105,18 @@ function getUnreadProjectedMessagesFromArr (msgArr, groupAllowed) {
   }, []);
 }
 
+function getProjectedMessageObj(msg) {
+  return {
+    id: msg.id,
+    content: msg.content,
+    type: msg.type,
+    ts: msg.timestamp,
+    senderName: msg.sender.formattedName,
+    isGroupMsg: msg.isGroupMsg,
+    mob: getMobFromChatId(msg.from)
+  };
+}
+
 module.exports = {
   clientOptions,
   sendJSON,
@@ -111,4 +126,5 @@ module.exports = {
   getChatIdFromMob,
   getProjectedMessagesFromRawArr,
   getUnreadProjectedMessagesFromArr,
+  getProjectedMessageObj,
 };

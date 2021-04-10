@@ -1,5 +1,5 @@
 const { sendJSON } = require("../utils");
-const { actionHandlers } = require("../bl");
+const { actionHandlers, removeAllMsgListeners } = require("../bl");
 const url = require("url");
 const { responseActions, requestActions } = require("../utils");
 
@@ -53,8 +53,10 @@ function onUpgrade(res, req, context) {
 
 function onOpen(ws, req) {
   wsConnCounter += 1;
+  ws.uniqueId = wsConnCounter; // to be shared among all sockets;
   console.log("onOpen", wsConnCounter);
   let userId = url.parse(req.url, true).query.userId;
+
   if (!userId) {
     sendJSON(ws, responseActions.warning, { msg: "no userId found in query parameteres, manually send loadWhatsapp action to load driver" });
     return;
@@ -82,21 +84,22 @@ function _attachHandler(ws, action, data) {
     handler(data, (action, jsonData) => {
       // can be called multiple times to notify client from handler
       sendJSON(ws, action, jsonData);
-    });
+    }, ws.uniqueId);
   }
 }
 
-function onClose(/*ws, code, message*/) {
-  _onWSDestroy();
+function onClose(ws/*code, message*/) {
+  _onWSDestroy(ws);
   console.log("WebSocket onClose");
 }
 
-function onError(/*ws, code, message*/) {
-  _onWSDestroy();
+function onError(ws/* error*/) {
+  _onWSDestroy(ws);
   console.log("WebSocket onError");
 }
 
-function _onWSDestroy() {
+function _onWSDestroy(ws) {
+  removeAllMsgListeners(ws.uniqueId);
   wsConnCounter--;
 }
 
