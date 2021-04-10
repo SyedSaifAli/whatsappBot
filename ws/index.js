@@ -7,7 +7,8 @@ const startWebsocketServer = () => {
   console.log('starting ws server on port', PORT);
   const wss = new WebSocket.Server({
     port: PORT,
-    path: "/whatsapp"
+    path: "/whatsapp",
+    'Access-Control-Allow-Origin': "*"
   });
   wss.on("connection", (ws, request) => {
     ws.on("close", (code, reason) => {
