@@ -1,7 +1,7 @@
 const WebSocket = require("ws");
 const eventHandlers = require("./eventHandler");
 const process = require("process");
-const PORT = 9099;
+const PORT = 10001;
 
 const startWebsocketServer = () => {
   console.log('starting ws server on port', PORT);
