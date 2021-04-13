@@ -45,7 +45,20 @@ function sendText(data, cb) {
 
   mobileNumbersArr.forEach(async (mob) => {
     await new Promise(r => setTimeout(r, getRandomInt(1, 3) * 1000));
-    await client
+
+    if(data.link){
+      await client
+      .sendLinkPreview(
+        getChatIdFromMob(mob), data.link, text)
+      .then((/*result*/) => {
+        // console.log("Result: ", result); //return object success
+      })
+      .catch((/*erro*/) => {
+        // console.error("Error when sending: ", erro); //return object error
+      });
+    }
+    else{
+      await client
       .sendText(getChatIdFromMob(mob), text)
       .then((/*result*/) => {
         // console.log("Result: ", result); //return object success
@@ -53,6 +66,7 @@ function sendText(data, cb) {
       .catch((/*erro*/) => {
         // console.error("Error when sending: ", erro); //return object error
       });
+    }
   });
   cb(responseActions.jobComplete, { msg: "text messages sent successfully" });
 }
@@ -89,6 +103,8 @@ function sendImage(data, cb) {
     return;
   }
 
+  let client = getClient(data.userId);
+
   if (!client) {
     cb(responseActions.sendImageError, { msg: "driver not loaded for this userId, Please load Whatsapp for this userId first" });
     return;
@@ -101,8 +117,6 @@ function sendImage(data, cb) {
   fs.writeFile(filePath, base64Data, 'base64', function(err) {
     console.log(err);
   });
-
-  let client = getClient(data.userId);
 
   let mobileNumbersArr = data.mob.toString().replace(/\s+/g, "").split(",");
   if (!mobileNumbersArr || !mobileNumbersArr.length) {
