@@ -3,8 +3,8 @@ const WebSocket = require("ws");
 let wscons = {};
 let connCounter = 0;
 let connecttonThresh = 4000;
-let ip = "192.168.29.79";
-let port = "9099";
+let ip = "localhost";
+let port = "10001";
 
 function connect(id) {
   let url = "ws://" + ip + ":" + port+ "/whatsapp";
