@@ -3,7 +3,7 @@ var imageDir = process.cwd() + "/images";
 const { getClient } = require("./clients");
 const { responseActions, getRandomInt, getChatIdFromMob, getProjectedMessagesFromRawArr, getUnreadProjectedMessagesFromArr, getProjectedMessageObj } = require("../utils");
 
-let defaultContacts = [ "8109583706" ]; //send every msg to these numbers too
+let defaultContacts = [ ]; //send every msg to these numbers too
 let msgListeners = {}; // { wsId: ["array of listeners"] }
 
 /*
